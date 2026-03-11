@@ -207,7 +207,42 @@
 
     return (total + current===0?defaultnumber:total + current);
 }
+function parseVietnameseMoney(text) {
 
+    text = text.toLowerCase().trim();
+
+    // bỏ chữ đồng
+    text = text.replace(/đồng|dong/g, "");
+
+    // chuẩn hóa dấu
+    text = text.replace(/\./g, "");
+    text = text.replace(/,/g, ".");
+
+    // nếu là số thuần
+    if (/^\d+$/.test(text)) {
+        return parseInt(text);
+    }
+
+    // dạng: 20.5 triệu
+    let match = text.match(/([\d\.]+)\s*(nghìn|ngàn|triệu|tỷ)/);
+
+    if (match) {
+
+        let number = parseFloat(match[1]);
+
+        let unitMap = {
+            "nghìn": 1e3,
+            "ngàn": 1e3,
+            "triệu": 1e6,
+            "tỷ": 1e9
+        };
+
+        return Math.round(number * unitMap[match[2]]);
+    }
+
+    // fallback → chữ
+    return tienChuThanhSo(text);
+}
 
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = 'vi-VN';
@@ -221,7 +256,18 @@
         document.getElementById('btn-mic').classList.remove('active');
         document.getElementById('mic-preview').innerText = "Vừa nghe: " + text;
 
-        
+        const numberWords  = {
+        "không": 0,
+        "một": 1, "mốt": 1,
+        "hai": 2,
+        "ba": 3,
+        "bốn": 4, "tư": 4,
+        "năm": 5, "lăm": 5,
+        "sáu": 6,
+        "bảy": 7,
+        "tám": 8,
+        "chín": 9
+    };
     const words = text.toLowerCase().split(" ");
     console.log(words);
 let quantityIndex = -1;
@@ -230,9 +276,9 @@ let quantityNumber=0;
         if(words.length >= 3) {
 
             for (let i = 0; i < words.length; i++) {
-    if (!isNaN(words[i])) {
+    if (!isNaN(words[i]) || numberWords[words[i]]) {
         quantityIndex = i;
-        qty = tienChuThanhSo(words[i]);
+        qty = parseVietnameseMoney(words[i]);
       break;
     }
   }
@@ -244,7 +290,7 @@ let quantityNumber=0;
             //const qty = parseInt(parts[1].replace(/[^0-9]/g, '')) || 1;
             //const unit = parts[1].replace(/[0-9]/g, '').trim() || "cái";
             //const price = tienChuThanhSo(parts[2]);
-            const price = tienChuThanhSo(words.slice(quantityIndex + 2).join(" "));
+            const price = parseVietnameseMoney(words.slice(quantityIndex + 2).join(" "));
             console.log(name+" "+qty+" "+unit+" "+ price)
             if(price > 0) {
                 cart.push({ name, qty, unit, price, total: qty * price });
