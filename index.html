@@ -221,28 +221,18 @@
         document.getElementById('btn-mic').classList.remove('active');
         document.getElementById('mic-preview').innerText = "Vừa nghe: " + text;
 
-        const numberWords  = {
-        "không": 0,
-        "một": 1, "mốt": 1,
-        "hai": 2,
-        "ba": 3,
-        "bốn": 4, "tư": 4,
-        "năm": 5, "lăm": 5,
-        "sáu": 6,
-        "bảy": 7,
-        "tám": 8,
-        "chín": 9
-    };
+        
     const words = text.toLowerCase().split(" ");
     console.log(words);
 let quantityIndex = -1;
+let quantityNumber=0;
   let qty = 1;
         if(words.length >= 3) {
 
             for (let i = 0; i < words.length; i++) {
-    if (numberWords[words[i]]) {
-      quantityIndex = i;
-      qty = numberWords[words[i]];
+    if (!isNaN(words[i])) {
+        quantityIndex = i;
+        qty = tienChuThanhSo(words[i]);
       break;
     }
   }
