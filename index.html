@@ -146,7 +146,7 @@
     function tienChuThanhSo(text) {
 
     text = text.toLowerCase()
-        .replace(/đồng|dong/g, "")
+        .replace(/đồng|dong|đ/g, "")
         .replace(/,/g, "")
         .trim();
 
@@ -173,7 +173,7 @@
     };
 
     let words = text.split(/\s+/);
-
+    let defaultnumber=parseInt(text) || 0;;
     let total = 0;
     let current = 0;
     let lastNumber = 0;
@@ -193,13 +193,19 @@
         else if (word === "trăm") {
             current = (lastNumber || 1) * 100;
         }
+        else if (word === "triệu") {
+            current = (lastNumber || 1) * 1000000;
+        }
+        else if (word === "tỷ") {
+            current = (lastNumber || 1) * 1000000000;
+        }
         else if (units[word]) {
             total += current * units[word];
             current = 0;
         }
     }
 
-    return total + current;
+    return (total + current===0?defaultnumber:total + current);
 }
 
 
@@ -211,7 +217,7 @@
     };
     
     recognition.onresult = (e) => {
-        const text = e.results[0][0].transcript.toLowerCase();
+        const text = e.results[0][0].transcript.toLowerCase().replace(/\./g,"");
         document.getElementById('btn-mic').classList.remove('active');
         document.getElementById('mic-preview').innerText = "Vừa nghe: " + text;
 
@@ -248,8 +254,7 @@ let quantityIndex = -1;
             //const qty = parseInt(parts[1].replace(/[^0-9]/g, '')) || 1;
             //const unit = parts[1].replace(/[0-9]/g, '').trim() || "cái";
             //const price = tienChuThanhSo(parts[2]);
-            const price1 = words.slice(quantityIndex + 2).join(" ");
-            const price = price1.replace(/\./g, "");
+            const price = tienChuThanhSo(words.slice(quantityIndex + 2).join(" "));
             console.log(name+" "+qty+" "+unit+" "+ price)
             if(price > 0) {
                 cart.push({ name, qty, unit, price, total: qty * price });
